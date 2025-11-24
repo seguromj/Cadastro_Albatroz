@@ -65,22 +65,20 @@ Me chamo Mayckon Jhonatas, tenho 27 anos e sou natural do Pará e moro no Góias
   
 ### 📊 Estatísticas
 
-<p align="center">
+<p>
   <img 
+    align="left" 
     alt="GitHub Stats" 
-    height="180em"
-    src="https://github-readme-stats.vercel.app/api?username=seguro-mj&show_icons=true&theme=tokyonight&include_all_commits=true&locale=pt-br" 
+    height="200" 
+    style="padding-right: 10px;" 
+    src="https://github-readme-stats.vercel.app/api?username=seguromj/seguromj&show_icons=true&theme=tokyonight&include_all_commits=true&locale=pt-br" 
   />
-  <img 
-    alt="Top Linguagens" 
-    height="180em"
-    src="https://github-readme-stats.vercel.app/api/top-langs/?username=seguro-mj&theme=tokyonight&layout=compact&custom_title=Tecnologias&langs_count=9" 
+
+<img 
+      align="left" 
+      alt="GitHub Stats" 
+      height="200" 
+      src="https://github-readme-stats.vercel.app/api/top-langs/?username=larissakich&theme=tokyonight&layout=compact&custom_title=Tecnologias&langs_count=9" 
   />
+
 </p>
-
-
-
-
-
-
-
