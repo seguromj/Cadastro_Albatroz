@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestão Pro - Spook Ice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #1a1a1a;
+            --gray: #7f8c8d;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+
+        /* Dashboard */
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
+        .dash-item { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+        .dash-item small { font-size: 10px; text-transform: uppercase; color: var(--gray); display: block; }
+        .dash-item b { font-size: 16px; color: var(--dark); }
+
+        /* Formulário Responsivo */
+        .cadastro-container { max-width: 500px; margin: 0 auto 20px auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .grid-form { display: flex; flex-direction: column; gap: 10px; }
+        .grid-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
+        
+        .btn-salvar { padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 5px; }
+
+        /* Navegação e Busca */
+        .nav-buttons { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 500px; margin: 0 auto; }
+        .btn-modal { padding: 18px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; position: relative; text-transform: uppercase; }
+        #btn-ativos { background: var(--primary); }
+        #btn-fim { background: var(--dark); }
+        #btn-excluidos { background: var(--gray); }
+
+        .search-container { padding: 10px 0; position: sticky; top: 50px; background: #f0f2f5; z-index: 5; }
+        .search-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+
+        @keyframes pulse-red { 0% { background: var(--dark); } 50% { background: var(--danger); } 100% { background: var(--dark); } }
+        .alerta-vencendo { animation: pulse-red 0.8s infinite; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 1000; overflow-y: auto; padding: 15px; box-sizing: border-box; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: #f0f2f5; z-index: 10; padding: 10px 0; }
+        .btn-fechar { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        
+        .card { background: white; border-radius: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; position: relative; border-bottom: 4px solid var(--primary); }
+        .card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
+        .card h4 { margin: 8px 0 4px 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card p { margin: 2px 0; font-size: 11px; color: #666; word-break: break-all; }
+        
+        .card-acesso { background: #f8f9fa; border-radius: 5px; padding: 5px; margin-top: 5px; border-left: 3px solid var(--primary); }
+        .card-acesso div { font-size: 10px; color: #333; font-weight: bold; }
+
+        .timer { background: #fff0f0; padding: 4px; border-radius: 4px; margin-top: 8px; font-size: 10px; font-weight: bold; color: var(--danger); text-align: center; border: 1px solid #ffdada; }
+        
+        .card-acoes { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; }
+        .card-acoes i { cursor: pointer; font-size: 16px; }
+        .fa-pencil-alt { color: var(--primary); }
+        .fa-trash { color: var(--danger); }
+        .fa-undo { color: var(--success); }
+        .fa-whatsapp { color: #25d366; }
+
+        .backup-section { max-width: 500px; margin: 20px auto; display: flex; gap: 10px; }
+        .btn-backup { flex: 1; background: white; border: 1px dashed var(--gray); color: var(--gray); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
+
+        @media (min-width: 600px) {
+            .nav-buttons { grid-template-columns: 1fr 1fr 1fr; max-width: 900px; }
+            .grid-cards { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+            .dashboard { max-width: 900px; }
+            .backup-section { max-width: 900px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="dash-item"><small>Ativos</small><b id="count-ativos">0</b></div>
+        <div class="dash-item"><small>Vencendo</small><b id="count-fim">0</b></div>
+        <div class="dash-item"><small>Total</small><b id="count-total">0</b></div>
+    </div>
+
+    <div class="cadastro-container">
+        <h2 style="font-size: 18px; margin-bottom: 15px;"><i class="fas fa-id-card"></i> Novo Cadastro</h2>
+        <div class="grid-form">
+            <input type="text" id="nome" placeholder="Nome Completo">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="tel" id="contato" placeholder="WhatsApp" maxlength="15">
+            <input type="text" id="cpf" placeholder="CPF" maxlength="14">
+            <input type="text" id="id_acesso" placeholder="ID de Acesso">
+            <input type="text" id="senha_acesso" placeholder="Senha de Acesso">
+            <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
+            <input type="datetime-local" id="validade">
+            <input type="text" id="foto_url" placeholder="URL do Link da Foto">
+            <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn-modal" id="btn-ativos" onclick="abrirModal('modal-ativos')">Ativos</button>
+        <button class="btn-modal" id="btn-fim" onclick="abrirModal('modal-fim')">Vencendo</button>
+        <button class="btn-modal" id="btn-excluidos" onclick="abrirModal('modal-excluidos')">Lixeira</button>
+    </div>
+
+    <div class="backup-section">
+        <button class="btn-backup" onclick="exportarDados()"><i class="fas fa-download"></i> Baixar Backup</button>
+        <button class="btn-backup" onclick="document.getElementById('file-import').click()"><i class="fas fa-upload"></i> Restaurar Backup</button>
+        <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importarDados(this)">
+    </div>
+
+    <div id="modal-ativos" class="modal">
+        <div class="modal-header"><h3>Ativos</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+        <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-ativos')"></div>
+        <div id="grid-ativos" class="grid-cards"></div>
+    </div>
+
+    <div id="modal-fim" class="modal">
+        <div class="modal-header"><h3>Fim de Contrato</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+        <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-fim')"></div>
+        <div id="grid-fim" class="grid-cards"></div>
+    </div>
+
+    <div id="modal-excluidos" class="modal">
+        <div class="modal-header"><h3>Lixeira</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+        <div id="grid-excluidos" class="grid-cards"></div>
+    </div>
+
+    <script>
+        let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
+        let idEdicao = null;
+
+        // Máscaras de Entrada
+        document.getElementById('cpf').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' + x[3] : '') + (x[4] ? '-' + x[4] : '');
+        });
+
+        document.getElementById('contato').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g,'');
+            if(cpf == '' || cpf.length != 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            let add = 0;
+            for (let i=0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11) rev = 0;
+            if (rev != parseInt(cpf.charAt(9))) return false;
+            add = 0;
+            for (let i = 0; i < 10; i ++) add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11) rev = 0;
+            if (rev != parseInt(cpf.charAt(10))) return false;
+            return true;
+        }
+
+        function processarCadastro() {
+            const nome = document.getElementById('nome').value;
+            const cpfValue = document.getElementById('cpf').value;
+            const validade = document.getElementById('validade').value;
+            const fotoLink = document.getElementById('foto_url').value;
+
+            if (!nome || !validade) return alert("Preencha Nome e Validade.");
+            if (!validarCPF(cpfValue)) return alert("CPF Inválido!");
+
+            const dados = {
+                nome,
+                email: document.getElementById('email').value,
+                contato: document.getElementById('contato').value,
+                cpf: cpfValue,
+                id_acesso: document.getElementById('id_acesso').value,
+                senha_acesso: document.getElementById('senha_acesso').value,
+                expira: new Date(validade).getTime(),
+                foto: fotoLink || 'https://www.w3schools.com/howto/img_avatar.png',
+                status: 'ativo'
+            };
+
+            if (idEdicao) {
+                const idx = clientes.findIndex(c => c.id === idEdicao);
+                clientes[idx] = { ...clientes[idx], ...dados };
+                idEdicao = null;
+                document.getElementById('btn-main').innerText = "FINALIZAR CADASTRO";
+            } else {
+                clientes.push({ id: Date.now(), ...dados });
+            }
+            salvarEAtualizar();
+            limparForm();
+        }
+
+        function salvarEAtualizar() {
+            localStorage.setItem('db_spook_v4', JSON.stringify(clientes));
+            renderizar();
+        }
+
+        function renderizar() {
+            const tabs = {
+                ativo: document.getElementById('grid-ativos'),
+                vencendo: document.getElementById('grid-fim'),
+                excluido: document.getElementById('grid-excluidos')
+            };
+
+            Object.values(tabs).forEach(t => t.innerHTML = '');
+            let countAtivos = 0, countVencendo = 0;
+
+            clientes.forEach(c => {
+                const msRestantes = c.expira - Date.now();
+                const horas = msRestantes / (1000 * 60 * 60);
+                
+                let pasta = c.status;
+                if (c.status === 'ativo' && horas < 8) {
+                    pasta = 'vencendo';
+                    countVencendo++;
+                } else if (c.status === 'ativo') {
+                    countAtivos++;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-search', (c.nome + c.cpf).toLowerCase());
+                if(pasta === 'vencendo') card.style.borderBottomColor = 'var(--danger)';
+                if(pasta === 'excluido') card.style.borderBottomColor = 'var(--gray)';
+
+                card.innerHTML = `
+                    <div class="card-acoes">
+                        ${pasta !== 'excluido' ? 
+                            `<i class="fab fa-whatsapp" onclick="enviarZap('${c.contato}', '${c.nome}')"></i>
+                             <i class="fas fa-pencil-alt" onclick="editar(${c.id})"></i>
+                             <i class="fas fa-trash" onclick="mudarStatus(${c.id}, 'excluido')"></i>` :
+                            `<i class="fas fa-undo" onclick="mudarStatus(${c.id}, 'ativo')"></i>`
+                        }
+                    </div>
+                    <img src="${c.foto}">
+                    <h4>${c.nome}</h4>
+                    <p><i class="fab fa-whatsapp"></i> ${c.contato}</p>
+                    <p><i class="fas fa-fingerprint"></i> ${c.cpf}</p>
+                    <div class="card-acesso">
+                        <div>ID: ${c.id_acesso || '---'}</div>
+                        <div>Pass: ${c.senha_acesso || '---'}</div>
+                    </div>
+                    <div class="timer">${calcCronometro(msRestantes)}</div>
+                `;
+                tabs[pasta].appendChild(card);
+            });
+
+            document.getElementById('count-ativos').innerText = countAtivos;
+            document.getElementById('count-fim').innerText = countVencendo;
+            document.getElementById('count-total').innerText = clientes.length;
+            document.getElementById('btn-fim').classList.toggle('alerta-vencendo', countVencendo > 0);
+        }
+
+        function calcCronometro(ms) {
+            if (ms < 0) return "CONTRATO EXPIRADO";
+            const d = Math.floor(ms / 86400000);
+            const h = Math.floor((ms % 86400000) / 3600000);
+            const m = Math.floor((ms % 3600000) / 60000);
+            return `${d}d ${h}h ${m}m`;
+        }
+
+        function enviarZap(tel, nome) {
+            const num = tel.replace(/\D/g, '');
+            const msg = encodeURIComponent(`Olá ${nome}, notamos que seu contrato está próximo do vencimento. Deseja renovar?`);
+            window.open(`https://wa.me/55${num}?text=${msg}`, '_blank');
+        }
+
+        function filtrarCards(input, gridId) {
+            const termo = input.value.toLowerCase();
+            const cards = document.getElementById(gridId).getElementsByClassName('card');
+            Array.from(cards).forEach(card => {
+                card.style.display = card.getAttribute('data-search').includes(termo) ? 'block' : 'none';
+            });
+        }
+
+        function exportarDados() {
+            if(clientes.length === 0) return alert("Não há dados para exportar.");
+            const blob = new Blob([JSON.stringify(clientes)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_spook_ice_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+            a.click();
+        }
+
+        function importarDados(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dadosImportados = JSON.parse(e.target.result);
+                    if (Array.isArray(dadosImportados)) {
+                        if(confirm(`Deseja importar ${dadosImportados.length} clientes? Isso substituirá os dados atuais.`)) {
+                            clientes = dadosImportados;
+                            salvarEAtualizar();
+                            alert("Backup restaurado com sucesso!");
+                        }
+                    } else {
+                        alert("Arquivo de backup inválido.");
+                    }
+                } catch (err) {
+                    alert("Erro ao ler o arquivo. Certifique-se de que é um arquivo JSON de backup.");
+                }
+                input.value = ''; // Limpa o input de arquivo
+            };
+            reader.readAsText(file);
+        }
+
+        function editar(id) {
+            const c = clientes.find(c => c.id === id);
+            document.getElementById('nome').value = c.nome;
+            document.getElementById('email').value = c.email;
+            document.getElementById('contato').value = c.contato;
+            document.getElementById('cpf').value = c.cpf;
+            document.getElementById('id_acesso').value = c.id_acesso || '';
+            document.getElementById('senha_acesso').value = c.senha_acesso || '';
+            document.getElementById('foto_url').value = c.foto || '';
+            const dt = new Date(c.expira);
+            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+            document.getElementById('validade').value = dt.toISOString().slice(0,16);
+            idEdicao = id;
+            document.getElementById('btn-main').innerText = "ATUALIZAR CLIENTE";
+            fecharModais();
+            window.scrollTo(0,0);
+        }
+
+        function mudarStatus(id, status) {
+            const i = clientes.findIndex(c => c.id === id);
+            clientes[i].status = status;
+            salvarEAtualizar();
+        }
+
+        function abrirModal(id) {
+            document.getElementById(id).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharModais() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            document.body.style.overflow = 'auto';
+        }
+
+        function limparForm() {
+            document.querySelectorAll('.grid-form input').forEach(i => i.value = '');
+        }
+
+        setInterval(renderizar, 60000);
+        renderizar();
+    </script>
+</body>
+</html>
