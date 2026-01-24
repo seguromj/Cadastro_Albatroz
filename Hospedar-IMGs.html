@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Spook Ice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #1a1a1a;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-enviar {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        /* Modal Styles */
+        #modal-status {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 300px;
+            width: 80%;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .success-icon {
+            font-size: 60px;
+            color: var(--success);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-text {
+            font-size: 16px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Estilo para o aviso de já cadastrado */
+        #aviso-cadastrado {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #aviso-cadastrado i {
+            font-size: 50px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <div id="form-content">
+            <div class="header">
+                <i class="fas fa-user-plus"></i>
+                <h2>Solicitar Cadastro</h2>
+                <p style="color: #7f8c8d; font-size: 14px;">Preencha os dados abaixo para começar.</p>
+            </div>
+
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="nome" placeholder="Ex: João Silva" required>
+                </div>
+
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Whatsapp</label>
+                    <input type="tel" id="whatsapp" placeholder="(00) 00000-0000" maxlength="15" required>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+
+                <button type="submit" class="btn-enviar" id="btn-submit">ENVIAR DADOS</button>
+            </form>
+        </div>
+
+        <div id="aviso-cadastrado">
+            <i class="fas fa-info-circle"></i>
+            <h3>Cadastro já realizado!</h3>
+            <p style="color: #666; font-size: 14px;">Identificamos que você já enviou seus dados. Por favor, aguarde o contato do suporte no seu Whatsapp.</p>
+        </div>
+    </div>
+
+    <div id="modal-status">
+        <div class="modal-content">
+            <div id="loading-box">
+                <div class="loader"></div>
+                <div class="status-text">Enviando dados...</div>
+            </div>
+            <div id="success-box" style="display: none;">
+                <i class="fas fa-check-circle success-icon" style="display: block;"></i>
+                <div class="status-text">Seu cadastro foi feito com sucesso, em breve o suporte irá entrar em contato para liberar seu acesso.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se já existe cadastro ao carregar a página
+        window.onload = function() {
+            if (localStorage.getItem('spook_ice_cadastrado') === 'true') {
+                document.getElementById('form-content').style.display = 'none';
+                document.getElementById('aviso-cadastrado').style.display = 'block';
+            }
+        };
+
+        // Máscara de CPF
+        document.getElementById('cpf').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' + x[3] : '') + (x[4] ? '-' + x[4] : '');
+        });
+
+        // Máscara de Whatsapp
+        document.getElementById('whatsapp').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btnSubmit = document.getElementById('btn-submit');
+            const modal = document.getElementById('modal-status');
+            const loadingBox = document.getElementById('loading-box');
+            const successBox = document.getElementById('success-box');
+
+            modal.style.display = 'flex';
+            btnSubmit.disabled = true;
+
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
+            
+            const formData = new FormData();
+            formData.append("entry.1234006123", document.getElementById('nome').value);
+            formData.append("entry.656246663", document.getElementById('cpf').value);
+            formData.append("entry.694404201", document.getElementById('whatsapp').value);
+            formData.append("entry.1689283183", document.getElementById('email').value);
+
+            fetch(formURL, {
+                method: "POST",
+                mode: "no-cors",
+                body: formData
+            }).then(() => {
+                // Marcar como cadastrado no navegador do cliente
+                localStorage.setItem('spook_ice_cadastrado', 'true');
+
+                setTimeout(() => {
+                    loadingBox.style.display = 'none';
+                    successBox.style.display = 'block';
+                    
+                    // Após 4 segundos, esconde o formulário e mostra o aviso fixo
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                        document.getElementById('form-content').style.display = 'none';
+                        document.getElementById('aviso-cadastrado').style.display = 'block';
+                    }, 4000);
+                }, 1500);
+            }).catch(error => {
+                alert("Erro ao enviar. Verifique sua conexão.");
+                modal.style.display = 'none';
+                btnSubmit.disabled = false;
+            });
+        });
+    </script>
+
+</body>
+</html>
