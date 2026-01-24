@@ -225,8 +225,8 @@
                 const rows = data.split('\n').map(row => row.split(','));
                 
                 const usuarioValido = rows.find(row => 
-                    row[24]?.trim() === inputID.trim() && 
-                    row[25]?.trim() === inputSenha.trim()
+                    row[10]?.trim() === inputID.trim() && 
+                    row[11]?.trim() === inputSenha.trim()
                 );
 
                 if (usuarioValido) {
