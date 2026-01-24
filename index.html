@@ -16,6 +16,66 @@
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
 
+        /* Login Screen */
+        #login-screen { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            text-align: center;
+            gap: 20px;
+        }
+        .btn-unlock { 
+            font-size: 50px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .btn-unlock:active { transform: scale(0.9); }
+        
+        /* Estilo para o novo botão de cadastro na tela de login */
+        .btn-login-cadastro {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #app-content { display: none; }
+
+        /* Botão Voltar no Topo */
+        .header-app { 
+            max-width: 500px; 
+            margin: 0 auto 10px auto; 
+            display: flex; 
+            justify-content: flex-start; 
+        }
+        .btn-voltar { 
+            background: var(--dark); 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         /* Dashboard */
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
         .dash-item { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
@@ -70,6 +130,7 @@
 
         @media (min-width: 600px) {
             .nav-buttons { grid-template-columns: 1fr 1fr 1fr; max-width: 900px; }
+            .header-app { max-width: 900px; }
             .grid-cards { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
             .dashboard { max-width: 900px; }
             .backup-section { max-width: 900px; }
@@ -78,62 +139,115 @@
 </head>
 <body>
 
-    <div class="dashboard">
-        <div class="dash-item"><small>Ativos</small><b id="count-ativos">0</b></div>
-        <div class="dash-item"><small>Vencendo</small><b id="count-fim">0</b></div>
-        <div class="dash-item"><small>Total</small><b id="count-total">0</b></div>
+    <div id="login-screen">
+        <button class="btn-unlock" onclick="fazerLogin()">
+            <i class="fas fa-lock"></i>
+        </button>
+        <button class="btn-login-cadastro" onclick="window.open('https://wa.me/55NUMERO_AQUI', '_blank')">
+            FAZER CADASTRO
+        </button>
+        <p style="margin-top: -5px; color: var(--gray); font-weight: bold;">Clique no botão: Fazer Cadastro para liberar o acesso</p>
     </div>
 
-    <div class="cadastro-container">
-        <h2 style="font-size: 18px; margin-bottom: 15px;"><i class="fas fa-id-card"></i> Novo Cadastro</h2>
-        <div class="grid-form">
-            <input type="text" id="nome" placeholder="Nome Completo">
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="tel" id="contato" placeholder="WhatsApp" maxlength="15">
-            <input type="text" id="cpf" placeholder="CPF" maxlength="14">
-            <input type="text" id="id_acesso" placeholder="ID de Acesso">
-            <input type="text" id="senha_acesso" placeholder="Senha de Acesso">
-            <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
-            <input type="datetime-local" id="validade">
-            <input type="text" id="foto_url" placeholder="URL do Link da Foto">
-            <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
+    <div id="app-content">
+        <div class="header-app">
+            <button class="btn-voltar" onclick="voltarParaLogin()">
+                <i class="fas fa-arrow-left"></i> SAIR / VOLTAR
+            </button>
         </div>
-    </div>
 
-    <div class="nav-buttons">
-        <button class="btn-modal" id="btn-ativos" onclick="abrirModal('modal-ativos')">Ativos</button>
-        <button class="btn-modal" id="btn-fim" onclick="abrirModal('modal-fim')">Vencendo</button>
-        <button class="btn-modal" id="btn-excluidos" onclick="abrirModal('modal-excluidos')">Lixeira</button>
-    </div>
+        <div class="dashboard">
+            <div class="dash-item"><small>Ativos</small><b id="count-ativos">0</b></div>
+            <div class="dash-item"><small>Vencendo</small><b id="count-fim">0</b></div>
+            <div class="dash-item"><small>Total</small><b id="count-total">0</b></div>
+        </div>
 
-    <div class="backup-section">
-        <button class="btn-backup" onclick="exportarDados()"><i class="fas fa-download"></i> Baixar Backup</button>
-        <button class="btn-backup" onclick="document.getElementById('file-import').click()"><i class="fas fa-upload"></i> Restaurar Backup</button>
-        <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importarDados(this)">
-    </div>
+        <div class="cadastro-container">
+            <h2 style="font-size: 18px; margin-bottom: 15px;"><i class="fas fa-id-card"></i> Novo Cadastro</h2>
+            <div class="grid-form">
+                <input type="text" id="nome" placeholder="Nome Completo">
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="tel" id="contato" placeholder="WhatsApp" maxlength="15">
+                <input type="text" id="cpf" placeholder="CPF" maxlength="14">
+                <input type="text" id="id_acesso" placeholder="ID de Acesso">
+                <input type="text" id="senha_acesso" placeholder="Senha de Acesso">
+                <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
+                <input type="datetime-local" id="validade">
+                <input type="text" id="foto_url" placeholder="URL do Link da Foto">
+                <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
+            </div>
+        </div>
 
-    <div id="modal-ativos" class="modal">
-        <div class="modal-header"><h3>Ativos</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-        <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-ativos')"></div>
-        <div id="grid-ativos" class="grid-cards"></div>
-    </div>
+        <div class="nav-buttons">
+            <button class="btn-modal" id="btn-ativos" onclick="abrirModal('modal-ativos')">Ativos</button>
+            <button class="btn-modal" id="btn-fim" onclick="abrirModal('modal-fim')">Vencendo</button>
+            <button class="btn-modal" id="btn-excluidos" onclick="abrirModal('modal-excluidos')">Lixeira</button>
+        </div>
 
-    <div id="modal-fim" class="modal">
-        <div class="modal-header"><h3>Fim de Contrato</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-        <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-fim')"></div>
-        <div id="grid-fim" class="grid-cards"></div>
-    </div>
+        <div class="backup-section">
+            <button class="btn-backup" onclick="exportarDados()"><i class="fas fa-download"></i> Baixar Backup</button>
+            <button class="btn-backup" onclick="document.getElementById('file-import').click()"><i class="fas fa-upload"></i> Restaurar Backup</button>
+            <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importarDados(this)">
+        </div>
 
-    <div id="modal-excluidos" class="modal">
-        <div class="modal-header"><h3>Lixeira</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-        <div id="grid-excluidos" class="grid-cards"></div>
+        <div id="modal-ativos" class="modal">
+            <div class="modal-header"><h3>Ativos</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-ativos')"></div>
+            <div id="grid-ativos" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-fim" class="modal">
+            <div class="modal-header"><h3>Fim de Contrato</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-fim')"></div>
+            <div id="grid-fim" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-excluidos" class="modal">
+            <div class="modal-header"><h3>Lixeira</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div id="grid-excluidos" class="grid-cards"></div>
+        </div>
     </div>
 
     <script>
         let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
         let idEdicao = null;
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVGJyIuUPbsSl0S9L51uAijnNMmscOkVz_8taWHyx2yd6i-C7MmANPsID4bihanjGel4peUR4kxsE-/pub?output=csv';
 
-        // Máscaras de Entrada
+        async function fazerLogin() {
+            const inputID = prompt("Digite seu ID de acesso:");
+            if (!inputID) return;
+            const inputSenha = prompt("Digite sua senha:");
+            if (!inputSenha) return;
+
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                const rows = data.split('\n').map(row => row.split(','));
+                
+                const usuarioValido = rows.find(row => 
+                    row[24]?.trim() === inputID.trim() && 
+                    row[25]?.trim() === inputSenha.trim()
+                );
+
+                if (usuarioValido) {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app-content').style.display = 'block';
+                    renderizar();
+                } else {
+                    alert("ID ou Senha incorretos.");
+                }
+            } catch (error) {
+                alert("Erro ao conectar com o banco de dados.");
+            }
+        }
+
+        function voltarParaLogin() {
+            if(confirm("Deseja realmente sair do sistema?")) {
+                document.getElementById('app-content').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+            }
+        }
+
         document.getElementById('cpf').addEventListener('input', e => {
             let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
             e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' + x[3] : '') + (x[4] ? '-' + x[4] : '');
@@ -204,6 +318,8 @@
                 vencendo: document.getElementById('grid-fim'),
                 excluido: document.getElementById('grid-excluidos')
             };
+
+            if(!tabs.ativo) return;
 
             Object.values(tabs).forEach(t => t.innerHTML = '');
             let countAtivos = 0, countVencendo = 0;
@@ -304,9 +420,9 @@
                         alert("Arquivo de backup inválido.");
                     }
                 } catch (err) {
-                    alert("Erro ao ler o arquivo. Certifique-se de que é um arquivo JSON de backup.");
+                    alert("Erro ao ler o arquivo.");
                 }
-                input.value = ''; // Limpa o input de arquivo
+                input.value = '';
             };
             reader.readAsText(file);
         }
@@ -350,7 +466,7 @@
         }
 
         setInterval(renderizar, 60000);
-        renderizar();
     </script>
 </body>
 </html>
+
