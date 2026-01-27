@@ -257,56 +257,42 @@
         </div>
     </div>
 
-    <!--👇 Codigo para realizar a Instalacao do App 👇-->
+    
     <script>
-      let promptDeInstalacao;
-      const areaInstalacao = document.getElementById('container-instalacao');
-      const botaoInstalar = document.getElementById('btnInstalarApp');
-      const botaoRecusar = document.getElementById('btnRecusarApp');
 
-      window.addEventListener('beforeinstallprompt', (e) => {
-        console.log("Evento de instalação capturado!");
-        e.preventDefault();
-        promptDeInstalacao = e;
+    let servicoInstalacao;
+const painelInstalacao = document.getElementById('container-instalacao');
+const btnInstalar = document.getElementById('btnInstalarApp');
+const btnRecusar = document.getElementById('btnRecusarApp');
 
-        const tempoRecusa = localStorage.getItem('app_recusado_em');
-        const agora = Date.now();
-        const umMinuto = 1 * 60 * 1000; 
+// Escuta o evento do navegador perguntando se pode instalar
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Impede que o navegador mostre a mensagem padrão dele
+    e.preventDefault();
+    // Guarda o evento para usar depois
+    servicoInstalacao = e;
+    // Mostra o seu banner personalizado
+    painelInstalacao.style.display = 'block';
+});
 
-        if (!tempoRecusa || (agora - tempoRecusa > umMinuto)) {
-            setTimeout(() => {
-                const modoApp = window.matchMedia('(display-mode: standalone)').matches;
-                if (!modoApp && promptDeInstalacao) {
-                    areaInstalacao.style.display = 'block';
-                }
-            }, 5000);
+btnInstalar.addEventListener('click', async () => {
+    if (servicoInstalacao) {
+        servicoInstalacao.prompt();
+        const { outcome } = await servicoInstalacao.userChoice;
+        if (outcome === 'accepted') {
+            console.log('Usuário aceitou a instalação');
         }
-      });
+        servicoInstalacao = null;
+        painelInstalacao.style.display = 'none';
+    }
+});
 
-      botaoInstalar.addEventListener('click', () => {
-        if (promptDeInstalacao) {
-          promptDeInstalacao.prompt();
-          promptDeInstalacao.userChoice.then((escolha) => {
-            if (escolha.outcome === 'accepted') {
-              areaInstalacao.style.display = 'none';
-              localStorage.removeItem('app_recusado_em');
-            }
-          });
-        }
-      });
+btnRecusar.addEventListener('click', () => {
+    painelInstalacao.style.display = 'none';
+});
+</script>
 
-      botaoRecusar.addEventListener('click', () => {
-        areaInstalacao.style.display = 'none';
-        localStorage.setItem('app_recusado_em', Date.now());
-      });
-
-      window.addEventListener('appinstalled', () => {
-        console.log("App instalado com sucesso!");
-        areaInstalacao.style.display = 'none';
-      });
-    </script>
-<!--👆 Codigo para realizar a Instalacao do App 👆-->
-
+    
     <script>
         let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
         let idEdicao = null;
