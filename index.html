@@ -17,7 +17,7 @@
     </script>
 <!--====👆Codigo para torna o site em App👆====-->
     
-    <title>Gestão Pro - Spook Ice</title>
+    <title>Gestão de Cadastros Albatroz</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -256,6 +256,56 @@
             <div id="grid-excluidos" class="grid-cards"></div>
         </div>
     </div>
+
+    <!--👇 Codigo para realizar a Instalacao do App 👇-->
+    <script>
+      let promptDeInstalacao;
+      const areaInstalacao = document.getElementById('container-instalacao');
+      const botaoInstalar = document.getElementById('btnInstalarApp');
+      const botaoRecusar = document.getElementById('btnRecusarApp');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log("Evento de instalação capturado!");
+        e.preventDefault();
+        promptDeInstalacao = e;
+
+        const tempoRecusa = localStorage.getItem('app_recusado_em');
+        const agora = Date.now();
+        const umMinuto = 1 * 60 * 1000; 
+
+        if (!tempoRecusa || (agora - tempoRecusa > umMinuto)) {
+            setTimeout(() => {
+                const modoApp = window.matchMedia('(display-mode: standalone)').matches;
+                if (!modoApp && promptDeInstalacao) {
+                    areaInstalacao.style.display = 'block';
+                }
+            }, 5000);
+        }
+      });
+
+      botaoInstalar.addEventListener('click', () => {
+        if (promptDeInstalacao) {
+          promptDeInstalacao.prompt();
+          promptDeInstalacao.userChoice.then((escolha) => {
+            if (escolha.outcome === 'accepted') {
+              areaInstalacao.style.display = 'none';
+              localStorage.removeItem('app_recusado_em');
+            }
+          });
+        }
+      });
+
+      botaoRecusar.addEventListener('click', () => {
+        areaInstalacao.style.display = 'none';
+        localStorage.setItem('app_recusado_em', Date.now());
+      });
+
+      window.addEventListener('appinstalled', () => {
+        console.log("App instalado com sucesso!");
+        areaInstalacao.style.display = 'none';
+      });
+    </script>
+<!--👆 Codigo para realizar a Instalacao do App 👆-->
 
     <script>
         let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
