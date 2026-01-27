@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!--====👇Codigo para torna o site em App👇====-->
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log("ALBATROZ, App configurado com sucesso!", reg))
+            .catch(err => console.log("Erro ao registrar SW:", err));
+        });
+      }
+    </script>
+<!--====👆Codigo para torna o site em App👆====-->
+    
     <title>Gestão Pro - Spook Ice</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -135,9 +149,44 @@
             .dashboard { max-width: 900px; }
             .backup-section { max-width: 900px; }
         }
+
+         /*👇 Estilo do Banner de Instalação App --> PWA 👇*/
+        #container-instalacao {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 10001; /* Ficar acima de tudo */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        #container-instalacao h3 { margin: 0 0 10px 0; color: var(--primary); }
+        #container-instalacao p { font-size: 14px; margin-bottom: 15px; }
+        .botoes-pwa { display: flex; gap: 10px; }
+        .btn-pwa { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+         /*👆 Estilo do Banner de Instalação App --> PWA 👆*/
     </style>
 </head>
 <body>
+
+    <!--====👇Codigo para torna o site em App👇====-->
+    <div id="container-instalacao">
+        <h3>Instalar Albatroz</h3>
+        <p>Deseja instalar este sistema como um aplicativo no seu celular?</p>
+        <div class="botoes-pwa">
+            <button id="btnInstalarApp" class="btn-pwa btn-green">INSTALAR</button>
+            <button id="btnRecusarApp" class="btn-pwa btn-vermelho">AGORA NÃO</button>
+        </div>
+    </div>
+<!--====👆Codigo para torna o site em App👆====-->
+    
 
     <div id="login-screen">
         <button class="btn-unlock" onclick="fazerLogin()">
