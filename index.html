@@ -204,7 +204,7 @@
                 const res = await fetch(SHEET_URL);
                 const data = await res.text();
                 const rows = data.split('\n').map(r => r.split(',').map(c => c.replace(/^"|"$/g, '').trim()));
-                if (rows.find(r => r[10] === id && r[11] === pw)) {
+                if (rows.find(r => r[13] === id && r[14] === pw)) {
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app-content').style.display = 'block';
                     renderizar();
