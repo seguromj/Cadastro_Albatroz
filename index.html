@@ -86,6 +86,7 @@
         .btn-enviar-form { width: 100%; background: var(--success); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 5px; cursor: pointer; font-size: 12px; }
         .btn-pendente { width: 100%; background: var(--warning); color: #000; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
         .btn-cadastrado { width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
+        .btn-excluir-planilha { width: 100%; background: var(--danger); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 5px; cursor: pointer; font-size: 12px; }
 
         .backup-section { max-width: 500px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
         .btn-backup { flex: 1; background: white; border: 1px dashed var(--gray); color: var(--gray); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
@@ -202,6 +203,9 @@
         let idEdicao = null;
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVGJyIuUPbsSl0S9L51uAijnNMmscOkVz_8taWHyx2yd6i-C7MmANPsID4bihanjGel4peUR4kxsE-/pub?output=csv';
 
+        // Atualização contínua do cronômetro mesmo com site fechado
+        setInterval(renderizar, 60000);
+
         async function fazerLogin() {
             const id = prompt("ID:"); const pw = prompt("Senha:");
             if (!id || !pw) return;
@@ -209,7 +213,7 @@
                 const res = await fetch(SHEET_URL);
                 const data = await res.text();
                 const rows = data.split('\n').map(r => r.split(',').map(c => c.replace(/^"|"$/g, '').trim()));
-                if (rows.find(r => r[13] === id && r[14] === pw)) { //ID e senha para entrar no sistema
+                if (rows.find(r => r[13] === id && r[14] === pw)) {
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app-content').style.display = 'block';
                     renderizar();
@@ -227,16 +231,15 @@
                 const sep = rows[0].includes(';') ? ';' : ',';
                 const dados = rows.slice(1);
                 grid.innerHTML = '';
-                const letras = ['A','B','C','D','E','F','G','H','I','J'];
+                const letras = ['A','B','C','D','E','F','G','H','I','J','K'];
                 dados.forEach((line) => {
                     const col = line.split(sep).map(item => item.replace(/^"|"$/g, '').trim());
                     if (col.length > 1) {
                         const card = document.createElement('div');
                         card.className = 'card';
                         let conteudoHTML = `<h4>Registro: ${col[5] || 'Sem Nome'}</h4>`;
-                        for(let i = 0; i <= 9; i++) conteudoHTML += `<p><b>Coluna ${letras[i]}:</b> ${col[i] || '---'}</p>`;
+                        for(let i = 0; i <= 10; i++) conteudoHTML += `<p><b>Coluna ${letras[i]}:</b> ${col[i] || '---'}</p>`;
                         
-                        // Reconhecimento da Coluna J (índice 9)
                         const statusColunaJ = (col[9] || "").toUpperCase();
                         if (statusColunaJ === "ATIVADO") {
                             conteudoHTML += `<button class="btn-cadastrado" onclick="toggleStatusPlanilha(this)">CADASTRADO</button>`;
@@ -256,10 +259,10 @@
         function toggleStatusPlanilha(btn) {
             if(btn.innerText === "CADASTRADO") {
                 btn.innerText = "PENDENTE";
-                btn.className = "btn-cadastrado";
-            } else {
-                btn.innerText = "PENDENTE";
                 btn.className = "btn-pendente";
+            } else {
+                btn.innerText = "CADASTRADO";
+                btn.className = "btn-cadastrado";
             }
         }
 
@@ -269,9 +272,9 @@
             document.getElementById('email').value = col[1] || "";
             document.getElementById('contato').value = col[8] || "";
             document.getElementById('cpf').value = col[6] || "";
-            document.getElementById('id_acesso').value = col[7] || ""; // Resposta da Coluna H (índice 7)
+            document.getElementById('id_acesso').value = col[7] || "";
             document.getElementById('senha_acesso').value = col[2] || "";
-            document.getElementById('id_planilha_field').value = col[9] || ""; // Resultado da Coluna J (índice 9)
+            document.getElementById('id_planilha_field').value = col[10] || ""; // Pega Coluna K
             fecharModais();
             window.scrollTo({top: 0, behavior: 'smooth'});
             alert("Dados enviados!");
@@ -290,7 +293,6 @@
             
             if (!nomeVal || !validadeVal) return alert("Preencha Nome e Validade.");
             
-            // Objeto para o Card Local
             const dados = {
                 nome: nomeVal,
                 email: emailVal,
@@ -300,36 +302,26 @@
                 senha_acesso: senha_acessoVal,
                 expira: new Date(validadeVal).getTime(),
                 foto: fotoVal,
+                id_planilha: idPlanilhaVal,
                 status: 'ativo'
             };
 
-            // URL para envio via POST no Forms
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
             const formData = new URLSearchParams();
             
-            // Mapeamento corrigido conforme solicitado
-            formData.append('entry.43896517', idPlanilhaVal);     // Coluna A
-            formData.append('entry.1141684307', emailVal);        // Coluna B
-            formData.append('entry.1324595610', senha_acessoVal); // Coluna C
-            formData.append('entry.629120708', id_acessoVal);     // Coluna D
-            formData.append('entry.256625062', senha_acessoVal);  // Coluna E (Senha)
-            formData.append('entry.1234006123', nomeVal);         // Coluna F (Nome)
-            formData.append('entry.656246663', cpfVal);           // Coluna G
-            formData.append('entry.1689283183', id_acessoVal);    // Coluna H
-            formData.append('entry.694404201', contatoVal);       // Coluna I
-            formData.append('entry.865836184', 'ATIVADO');        // Coluna J
+            formData.append('entry.43896517', idPlanilhaVal);
+            formData.append('entry.1141684307', emailVal);
+            formData.append('entry.1324595610', senha_acessoVal);
+            formData.append('entry.629120708', id_acessoVal);
+            formData.append('entry.256625062', senha_acessoVal);
+            formData.append('entry.1234006123', nomeVal);
+            formData.append('entry.656246663', cpfVal);
+            formData.append('entry.1689283183', id_acessoVal);
+            formData.append('entry.694404201', contatoVal);
+            formData.append('entry.865836184', 'ATIVADO');
 
-            // Envio silencioso para a planilha
-            fetch(formURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            }).then(() => {
-                console.log("Dados sincronizados com a planilha.");
-            }).catch(err => console.error("Erro ao sincronizar:", err));
+            fetch(formURL, { method: 'POST', mode: 'no-cors', body: formData });
 
-            // Lógica de Atualização ou Inserção de Card local
             if (idEdicao) {
                 const idx = clientes.findIndex(c => c.id === idEdicao);
                 clientes[idx] = { ...clientes[idx], ...dados };
@@ -341,7 +333,22 @@
             
             salvarEAtualizar(); 
             limparForm();
-            alert("Cadastro realizado e enviado para a planilha!");
+            alert("Cadastro realizado!");
+        }
+
+        // Função para enviar comando de exclusão para a planilha
+        function enviarExcluirPlanilha(idPlanilha) {
+            if(!idPlanilha) return alert("ID da planilha não encontrado neste card.");
+            if(!confirm("Deseja enviar comando de EXCLUSÃO para a planilha?")) return;
+
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
+            const formData = new URLSearchParams();
+            formData.append('entry.43896517', idPlanilha); // ID na Coluna K
+            formData.append('entry.865836184', 'EXCLUIR'); // EXCLUIR na Coluna J
+
+            fetch(formURL, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => alert("Comando de exclusão enviado para a planilha!"))
+            .catch(() => alert("Erro ao conectar."));
         }
 
         function salvarEAtualizar() { localStorage.setItem('db_spook_v4', JSON.stringify(clientes)); renderizar(); }
@@ -378,12 +385,14 @@
                     <h4>${c.nome}</h4>
                     <p><i class="fas fa-envelope"></i> ${c.email || 'N/A'}</p>
                     <p><i class="fab fa-whatsapp"></i> ${c.contato}</p>
-                    <p><i class="fas fa-fingerprint"></i> ${c.cpf}</p>
+                    <p><i class="fas fa-fingerprint"></i> CPF: ${c.cpf}</p>
+                    <p><i class="fas fa-table"></i> ID Planilha: ${c.id_planilha || '---'}</p>
                     <div class="card-acesso">
                         <div>ID: ${c.id_acesso || '---'}</div>
                         <div>Pass: ${c.senha_acesso || '---'}</div>
                     </div>
                     <div class="timer">${calcCronometro(ms)}</div>
+                    ${p !== 'excluido' ? `<button class="btn-excluir-planilha" onclick="enviarExcluirPlanilha('${c.id_planilha}')">EXCLUIR NA PLANILHA</button>` : ''}
                 `;
 
                 if(p === 'ativo') tA.appendChild(card); 
@@ -413,6 +422,7 @@
             document.getElementById('id_acesso').value = c.id_acesso || '';
             document.getElementById('senha_acesso').value = c.senha_acesso || '';
             document.getElementById('foto_url').value = c.foto || '';
+            document.getElementById('id_planilha_field').value = c.id_planilha || '';
             const dt = new Date(c.expira);
             dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
             document.getElementById('validade').value = dt.toISOString().slice(0,16);
@@ -466,9 +476,9 @@
                 try {
                     clientes = JSON.parse(e.target.result); 
                     salvarEAtualizar(); 
-                    alert("Backup restaurado com sucesso!"); 
+                    alert("Backup restaurado!"); 
                 } catch(err) {
-                    alert("Erro ao importar arquivo.");
+                    alert("Erro ao importar.");
                 }
             };
             reader.readAsText(input.files[0]);
