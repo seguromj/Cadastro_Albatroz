@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Spook Ice</title>
+    <title>Cadastro - ALBATROZ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -257,7 +257,7 @@
             e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
         });
 
-        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+        document.getElementById('form-cadastro').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const btnSubmit = document.getElementById('btn-submit');
@@ -274,6 +274,36 @@
             modal.style.display = 'flex';
             btnSubmit.disabled = true;
 
+            // --- Lógica para gerar ID único ---
+            let idUnicoAleatorio = "";
+            try {
+                const responseCsv = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTVGJyIuUPbsSl0S9L51uAijnNMmscOkVz_8taWHyx2yd6i-C7MmANPsID4bihanjGel4peUR4kxsE-/pub?output=csv");
+                const csvText = await responseCsv.text();
+                const linhas = csvText.split('\n');
+                let idsExistentes = [];
+                
+                // Pega a Coluna K (índice 10)
+                for (let i = 1; i < linhas.length; i++) {
+                    const colunas = linhas[i].split(',');
+                    if (colunas[10]) {
+                        idsExistentes.push(colunas[10].trim());
+                    }
+                }
+
+                let gerouNovo = false;
+                while (!gerouNovo) {
+                    let tentativa = Math.floor(100000 + Math.random() * 900000).toString();
+                    if (!idsExistentes.includes(tentativa)) {
+                        idUnicoAleatorio = tentativa;
+                        gerouNovo = true;
+                    }
+                }
+            } catch (err) {
+                // Fallback caso falhe a leitura (gera um aleatório mesmo assim)
+                idUnicoAleatorio = Math.floor(100000 + Math.random() * 900000).toString();
+            }
+            // ---------------------------------
+
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
             
             const formData = new FormData();
@@ -286,6 +316,10 @@
             formData.append("entry.1324595610", document.getElementById('senha').value); // Coluna C
             formData.append("entry.256625062", document.getElementById('senha').value);  // Coluna E
             formData.append("entry.1689283183", document.getElementById('id_acesso').value); // Coluna H
+            
+            // Novos Entries para ID Aleatório Único
+            formData.append("entry.865836184", idUnicoAleatorio); // Coluna J
+            formData.append("entry.43896517", idUnicoAleatorio);  // Coluna K
 
             // Salvar dados localmente para o resumo
             const dadosResumo = {
@@ -294,7 +328,8 @@
                 whatsapp: document.getElementById('whatsapp').value,
                 email: document.getElementById('email').value,
                 id: document.getElementById('id_acesso').value,
-                senha: document.getElementById('senha').value
+                senha: document.getElementById('senha').value,
+                id_unico: idUnicoAleatorio
             };
             localStorage.setItem('dados_spook_resumo', JSON.stringify(dadosResumo));
 
@@ -333,13 +368,14 @@
                     <p><strong>Email de Acesso:</strong> ${dados.email}</p>
                     <p><strong>ID de Acesso do Historico:</strong> ${dados.id}</p>
                     <p><strong>Senha para Ambos os Acessos:</strong> ${dados.senha}</p>
+                    <p><strong>ID de Controle:</strong> ${dados.id_unico || ''}</p>
                 `;
             }
         }
 
         function copiarDados() {
             const dados = JSON.parse(localStorage.getItem('dados_spook_resumo'));
-            const texto = `DADOS DE CADASTRO:\nNome: ${dados.nome}\nCPF: ${dados.cpf}\nWhatsApp: ${dados.whatsapp}\nEmail: ${dados.email}\nID: ${dados.id}\nSenha: ${dados.senha}`;
+            const texto = `DADOS DE CADASTRO:\nNome: ${dados.nome}\nCPF: ${dados.cpf}\nWhatsApp: ${dados.whatsapp}\nEmail: ${dados.email}\nID: ${dados.id}\nSenha: ${dados.senha}\nID Controle: ${dados.id_unico}`;
             navigator.clipboard.writeText(texto).then(() => {
                 alert("Dados copiados para a área de transferência!");
             });
@@ -348,4 +384,3 @@
 
 </body>
 </html>
-
