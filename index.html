@@ -149,6 +149,7 @@
                 <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
                 <input type="datetime-local" id="validade">
                 <input type="text" id="foto_url" placeholder="URL do Link da Foto">
+                <input type="text" id="id_planilha_field" placeholder="ID Planilha (Entry 43896517)">
                 <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
             </div>
         </div>
@@ -187,7 +188,11 @@
         </div>
 
         <div id="modal-excluidos" class="modal">
-            <div class="modal-header"><h3>Lixeira</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div class="modal-header">
+                <h3>Lixeira</h3> 
+                <button class="btn-fechar" onclick="esvaziarLixeira()" style="background: var(--dark); margin-right: 10px;">ESVAZIAR LIXEIRA</button>
+                <button class="btn-fechar" onclick="fecharModais()">Sair</button>
+            </div>
             <div id="grid-excluidos" class="grid-cards"></div>
         </div>
     </div>
@@ -204,7 +209,7 @@
                 const res = await fetch(SHEET_URL);
                 const data = await res.text();
                 const rows = data.split('\n').map(r => r.split(',').map(c => c.replace(/^"|"$/g, '').trim()));
-                if (rows.find(r => r[13] === id && r[14] === pw)) {
+                if (rows.find(r => r[13] === id && r[14] === pw)) { //ID e senha para entrar no sistema
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app-content').style.display = 'block';
                     renderizar();
@@ -249,8 +254,8 @@
         }
 
         function toggleStatusPlanilha(btn) {
-            if(btn.innerText === "PENDENTE") {
-                btn.innerText = "CADASTRADO";
+            if(btn.innerText === "CADASTRADO") {
+                btn.innerText = "PENDENTE";
                 btn.className = "btn-cadastrado";
             } else {
                 btn.innerText = "PENDENTE";
@@ -264,30 +269,67 @@
             document.getElementById('email').value = col[1] || "";
             document.getElementById('contato').value = col[8] || "";
             document.getElementById('cpf').value = col[6] || "";
-            document.getElementById('id_acesso').value = col[3] || "";
+            document.getElementById('id_acesso').value = col[7] || ""; // Resposta da Coluna H (índice 7)
             document.getElementById('senha_acesso').value = col[2] || "";
+            document.getElementById('id_planilha_field').value = col[9] || ""; // Resultado da Coluna J (índice 9)
             fecharModais();
             window.scrollTo({top: 0, behavior: 'smooth'});
             alert("Dados enviados!");
         }
 
         function processarCadastro() {
-            const nome = document.getElementById('nome').value;
-            const validade = document.getElementById('validade').value;
-            if (!nome || !validade) return alert("Preencha Nome e Validade.");
+            const nomeVal = document.getElementById('nome').value;
+            const emailVal = document.getElementById('email').value;
+            const contatoVal = document.getElementById('contato').value;
+            const cpfVal = document.getElementById('cpf').value;
+            const id_acessoVal = document.getElementById('id_acesso').value;
+            const senha_acessoVal = document.getElementById('senha_acesso').value;
+            const validadeVal = document.getElementById('validade').value;
+            const idPlanilhaVal = document.getElementById('id_planilha_field').value;
+            const fotoVal = document.getElementById('foto_url').value || 'https://www.w3schools.com/howto/img_avatar.png';
             
+            if (!nomeVal || !validadeVal) return alert("Preencha Nome e Validade.");
+            
+            // Objeto para o Card Local
             const dados = {
-                nome,
-                email: document.getElementById('email').value,
-                contato: document.getElementById('contato').value,
-                cpf: document.getElementById('cpf').value,
-                id_acesso: document.getElementById('id_acesso').value,
-                senha_acesso: document.getElementById('senha_acesso').value,
-                expira: new Date(validade).getTime(),
-                foto: document.getElementById('foto_url').value || 'https://www.w3schools.com/howto/img_avatar.png',
+                nome: nomeVal,
+                email: emailVal,
+                contato: contatoVal,
+                cpf: cpfVal,
+                id_acesso: id_acessoVal,
+                senha_acesso: senha_acessoVal,
+                expira: new Date(validadeVal).getTime(),
+                foto: fotoVal,
                 status: 'ativo'
             };
 
+            // URL para envio via POST no Forms
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
+            const formData = new URLSearchParams();
+            
+            // Mapeamento corrigido conforme solicitado
+            formData.append('entry.43896517', idPlanilhaVal);     // Coluna A
+            formData.append('entry.1141684307', emailVal);        // Coluna B
+            formData.append('entry.1324595610', senha_acessoVal); // Coluna C
+            formData.append('entry.629120708', id_acessoVal);     // Coluna D
+            formData.append('entry.256625062', senha_acessoVal);  // Coluna E (Senha)
+            formData.append('entry.1234006123', nomeVal);         // Coluna F (Nome)
+            formData.append('entry.656246663', cpfVal);           // Coluna G
+            formData.append('entry.1689283183', id_acessoVal);    // Coluna H
+            formData.append('entry.694404201', contatoVal);       // Coluna I
+            formData.append('entry.865836184', 'ATIVADO');        // Coluna J
+
+            // Envio silencioso para a planilha
+            fetch(formURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            }).then(() => {
+                console.log("Dados sincronizados com a planilha.");
+            }).catch(err => console.error("Erro ao sincronizar:", err));
+
+            // Lógica de Atualização ou Inserção de Card local
             if (idEdicao) {
                 const idx = clientes.findIndex(c => c.id === idEdicao);
                 clientes[idx] = { ...clientes[idx], ...dados };
@@ -296,7 +338,10 @@
             } else {
                 clientes.push({ id: Date.now(), ...dados });
             }
-            salvarEAtualizar(); limparForm();
+            
+            salvarEAtualizar(); 
+            limparForm();
+            alert("Cadastro realizado e enviado para a planilha!");
         }
 
         function salvarEAtualizar() { localStorage.setItem('db_spook_v4', JSON.stringify(clientes)); renderizar(); }
@@ -325,7 +370,8 @@
                             `<i class="fab fa-whatsapp" onclick="enviarZap('${c.contato}', '${c.nome}')"></i>
                              <i class="fas fa-pencil-alt" onclick="editar(${c.id})"></i>
                              <i class="fas fa-trash" onclick="mudarStatus(${c.id}, 'excluido')"></i>` :
-                            `<i class="fas fa-undo" onclick="mudarStatus(${c.id}, 'ativo')"></i>`
+                            `<i class="fas fa-trash" style="color:red;" onclick="excluirDefinitivo(${c.id})"></i>
+                             <i class="fas fa-undo" onclick="mudarStatus(${c.id}, 'ativo')"></i>`
                         }
                     </div>
                     <img src="${c.foto}">
@@ -387,6 +433,21 @@
         }
 
         function mudarStatus(id, status) { const i = clientes.findIndex(c => c.id === id); clientes[i].status = status; salvarEAtualizar(); }
+        
+        function excluirDefinitivo(id) {
+            if(confirm("Deseja excluir este registro permanentemente?")) {
+                clientes = clientes.filter(c => c.id !== id);
+                salvarEAtualizar();
+            }
+        }
+
+        function esvaziarLixeira() {
+            if(confirm("Deseja apagar TODOS os itens da lixeira permanentemente?")) {
+                clientes = clientes.filter(c => c.status !== 'excluido');
+                salvarEAtualizar();
+            }
+        }
+
         function abrirModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; if(id === 'modal-planilha') carregarDadosPlanilha(); }
         function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.body.style.overflow = 'auto'; }
         function limparForm() { document.querySelectorAll('.grid-form input').forEach(i => i.value = ''); }
