@@ -3,20 +3,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <link rel="manifest" href="manifest.json">
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log("ALBATROZ, App configurado com sucesso!", reg))
-            .catch(err => console.log("Erro ao registrar SW:", err));
-        });
-      }
-    </script>
-    
-    <title>Gestão de Cadastros Albatroz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Spook Ice</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -24,456 +12,340 @@
             --success: #2ecc71;
             --danger: #e74c3c;
             --dark: #1a1a1a;
-            --gray: #7f8c8d;
-            --warning: #f1c40f;
+            --bg: #f0f2f5;
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
 
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; gap: 20px; }
-        .btn-unlock { font-size: 50px; background: var(--primary); color: white; border: none; width: 100px; height: 100px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; }
-        .btn-unlock:active { transform: scale(0.9); }
-        .btn-login-cadastro { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-        #app-content { display: none; }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
 
-        .header-app { max-width: 500px; margin: 0 auto 10px auto; display: flex; justify-content: flex-start; }
-        .btn-voltar { background: var(--dark); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .header i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
 
-        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
-        .dash-item { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
-        .dash-item small { font-size: 10px; text-transform: uppercase; color: var(--gray); display: block; }
-        .dash-item b { font-size: 16px; color: var(--dark); }
+        .header h2 {
+            margin: 0;
+            color: var(--dark);
+        }
 
-        .cadastro-container { max-width: 500px; margin: 0 auto 20px auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .grid-form { display: flex; flex-direction: column; gap: 10px; }
-        .grid-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
-        .btn-salvar { padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 5px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-        .nav-buttons { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 500px; margin: 0 auto; }
-        .btn-modal { padding: 18px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; position: relative; text-transform: uppercase; }
-        #btn-ativos { background: var(--primary); }
-        #btn-fim { background: var(--dark); }
-        #btn-excluidos { background: var(--gray); }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+        }
 
-        .search-container { padding: 10px 0; position: sticky; top: 0; background: #f0f2f5; z-index: 5; }
-        .search-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        @keyframes pulse-red { 0% { background: var(--dark); } 50% { background: var(--danger); } 100% { background: var(--dark); } }
-        .alerta-vencendo { animation: pulse-red 0.8s infinite; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 1000; overflow-y: auto; padding: 15px; box-sizing: border-box; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: #f0f2f5; z-index: 10; padding: 10px 0; }
-        .btn-fechar { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
 
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        .card { background: white; border-radius: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; position: relative; border-bottom: 4px solid var(--primary); }
-        .card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
-        .card h4 { margin: 8px 0 4px 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary); }
-        .card p { margin: 2px 0; font-size: 11px; color: #666; word-break: break-all; }
-        
-        .card-acesso { background: #f8f9fa; border-radius: 5px; padding: 5px; margin-top: 5px; border-left: 3px solid var(--primary); }
-        .card-acesso div { font-size: 10px; color: #333; font-weight: bold; }
+        .btn-enviar {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
 
-        .timer { background: #fff0f0; padding: 4px; border-radius: 4px; margin-top: 8px; font-size: 10px; font-weight: bold; color: var(--danger); text-align: center; border: 1px solid #ffdada; }
-        
-        .card-acoes { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; }
-        .card-acoes i { cursor: pointer; font-size: 16px; }
-        .fa-pencil-alt { color: var(--primary); }
-        .fa-trash { color: var(--danger); }
-        .fa-undo { color: var(--success); }
-        .fa-whatsapp { color: #25d366; }
+        /* Modal Styles */
+        #modal-status {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
 
-        .btn-enviar-form { width: 100%; background: var(--success); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 5px; cursor: pointer; font-size: 12px; }
-        .btn-pendente { width: 100%; background: var(--warning); color: #000; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
-        .btn-cadastrado { width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 300px;
+            width: 80%;
+        }
 
-        .backup-section { max-width: 500px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
-        .btn-backup { flex: 1; background: white; border: 1px dashed var(--gray); color: var(--gray); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
-        .btn-importar-sheet { background: #007bff !important; color: white !important; border: none !important; font-weight: bold; text-transform: uppercase; }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
 
-        #container-instalacao { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 15px; z-index: 10001; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
-        .botoes-pwa { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-pwa { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-green { background: var(--success); color: white; }
-        .btn-vermelho { background: var(--danger); color: white; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media (min-width: 600px) {
-            .nav-buttons { grid-template-columns: 1fr 1fr 1fr; max-width: 900px; }
-            .grid-cards { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        .success-icon {
+            font-size: 60px;
+            color: var(--success);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-text {
+            font-size: 16px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Estilo para o aviso de já cadastrado */
+        #aviso-cadastrado {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #aviso-cadastrado i {
+            font-size: 50px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        /* Área de resumo para cópia */
+        .resumo-dados {
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
 
-    <div id="container-instalacao">
-        <h3>Instalar Albatroz</h3>
-        <p>Deseja instalar este sistema como um aplicativo no seu celular?</p>
-        <div class="botoes-pwa">
-            <button id="btnInstalarApp" class="btn-pwa btn-green">INSTALAR</button>
-            <button id="btnRecusarApp" class="btn-pwa btn-vermelho">AGORA NÃO</button>
+    <div class="container" id="main-container">
+        <div id="form-content">
+            <div class="header">
+                <i class="fas fa-user-plus"></i>
+                <h2>Solicitar Cadastro</h2>
+                <p style="color: #7f8c8d; font-size: 14px;">Preencha os dados abaixo para começar.</p>
+            </div>
+
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="nome" placeholder="Ex: João Silva" required>
+                </div>
+
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Whatsapp</label>
+                    <input type="tel" id="whatsapp" placeholder="(00) 00000-0000" maxlength="15" required>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ID de Acesso (Histórico)</label>
+                    <input type="text" id="id_acesso" placeholder="Digite seu ID" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="btn-enviar" id="btn-submit">ENVIAR DADOS</button>
+            </form>
+        </div>
+
+        <div id="aviso-cadastrado">
+            <i class="fas fa-info-circle"></i>
+            <h3>Cadastro já realizado!</h3>
+            <p style="color: #666; font-size: 14px;">Identificamos que você já enviou seus dados. Por favor, aguarde o contato do suporte no seu Whatsapp.</p>
+            
+            <div id="dados-copia" class="resumo-dados">
+                <strong>Seus Dados para Cópia:</strong><br>
+                <div id="lista-resumo"></div>
+                <button onclick="copiarDados()" style="margin-top:10px; width:100%; padding:5px; cursor:pointer;">Copiar Dados</button>
+            </div>
         </div>
     </div>
 
-    <div id="login-screen">
-        <button class="btn-unlock" onclick="fazerLogin()">
-            <i class="fas fa-lock"></i>
-        </button>
-        <button class="btn-login-cadastro" onclick="window.open('Cadastro.html', '_blank')">
-            FAZER CADASTRO
-        </button>
-        <p style="margin-top: -5px; color: var(--gray); font-weight: bold;">Clique no botão: Fazer Cadastro para liberar o acesso</p>
-    </div>
-
-    <div id="app-content">
-        <div class="header-app">
-            <button class="btn-voltar" onclick="voltarParaLogin()">
-                <i class="fas fa-arrow-left"></i> SAIR / VOLTAR
-            </button>
-        </div>
-
-        <div class="dashboard">
-            <div class="dash-item"><small>Ativos</small><b id="count-ativos">0</b></div>
-            <div class="dash-item"><small>Vencendo</small><b id="count-fim">0</b></div>
-            <div class="dash-item"><small>Total</small><b id="count-total">0</b></div>
-        </div>
-
-        <div class="cadastro-container">
-            <h2 style="font-size: 18px; margin-bottom: 15px;"><i class="fas fa-id-card"></i> Novo Cadastro</h2>
-            <div class="grid-form">
-                <input type="text" id="nome" placeholder="Nome Completo">
-                <input type="email" id="email" placeholder="E-mail">
-                <input type="tel" id="contato" placeholder="WhatsApp" maxlength="15">
-                <input type="text" id="cpf" placeholder="CPF" maxlength="14">
-                <input type="text" id="id_acesso" placeholder="ID de Acesso">
-                <input type="text" id="senha_acesso" placeholder="Senha de Acesso">
-                <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
-                <input type="datetime-local" id="validade">
-                <input type="text" id="foto_url" placeholder="URL do Link da Foto">
-                <input type="text" id="id_planilha_field" placeholder="ID Planilha (Entry 43896517)">
-                <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
+    <div id="modal-status">
+        <div class="modal-content">
+            <div id="loading-box">
+                <div class="loader"></div>
+                <div class="status-text">Enviando dados...</div>
             </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn-modal" id="btn-ativos" onclick="abrirModal('modal-ativos')">Ativos</button>
-            <button class="btn-modal" id="btn-fim" onclick="abrirModal('modal-fim')">Vencendo</button>
-            <button class="btn-modal" id="btn-excluidos" onclick="abrirModal('modal-excluidos')">Lixeira</button>
-        </div>
-
-        <div class="backup-section">
-            <button class="btn-backup btn-importar-sheet" onclick="abrirModal('modal-planilha')"><i class="fas fa-table"></i> PLANILHA</button>
-            <div style="display: flex; gap: 10px; width: 100%;">
-                <button class="btn-backup" onclick="exportarDados()"><i class="fas fa-download"></i> Baixar Backup</button>
-                <button class="btn-backup" onclick="document.getElementById('file-import').click()"><i class="fas fa-upload"></i> Restaurar Backup</button>
+            <div id="success-box" style="display: none;">
+                <i class="fas fa-check-circle success-icon" style="display: block;"></i>
+                <div class="status-text">Seu cadastro foi feito com sucesso, em breve o suporte irá entrar em contato para liberar seu acesso.</div>
             </div>
-            <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importarDados(this)">
-        </div>
-
-        <div id="modal-planilha" class="modal">
-            <div class="modal-header"><h3>Sincronização da Planilha</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-            <div style="text-align: center; margin-bottom: 15px;"><button onclick="carregarDadosPlanilha()" class="btn-salvar" style="width: auto; padding: 10px 20px; background: var(--primary);">CARREGAR DADOS ATUAIS</button></div>
-            <div id="grid-planilha" class="grid-cards"></div>
-        </div>
-
-        <div id="modal-ativos" class="modal">
-            <div class="modal-header"><h3>Ativos</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-ativos')"></div>
-            <div id="grid-ativos" class="grid-cards"></div>
-        </div>
-
-        <div id="modal-fim" class="modal">
-            <div class="modal-header"><h3>Vencendo</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
-            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-fim')"></div>
-            <div id="grid-fim" class="grid-cards"></div>
-        </div>
-
-        <div id="modal-excluidos" class="modal">
-            <div class="modal-header">
-                <h3>Lixeira</h3> 
-                <button class="btn-fechar" onclick="esvaziarLixeira()" style="background: var(--dark); margin-right: 10px;">ESVAZIAR LIXEIRA</button>
-                <button class="btn-fechar" onclick="fecharModais()">Sair</button>
-            </div>
-            <div id="grid-excluidos" class="grid-cards"></div>
         </div>
     </div>
 
     <script>
-        let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
-        let idEdicao = null;
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVGJyIuUPbsSl0S9L51uAijnNMmscOkVz_8taWHyx2yd6i-C7MmANPsID4bihanjGel4peUR4kxsE-/pub?output=csv';
-
-        async function fazerLogin() {
-            const id = prompt("ID:"); const pw = prompt("Senha:");
-            if (!id || !pw) return;
-            try {
-                const res = await fetch(SHEET_URL);
-                const data = await res.text();
-                const rows = data.split('\n').map(r => r.split(',').map(c => c.replace(/^"|"$/g, '').trim()));
-                if (rows.find(r => r[13] === id && r[14] === pw)) { //ID e senha para entrar no sistema
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-content').style.display = 'block';
-                    renderizar();
-                } else alert("Erro!");
-            } catch (e) { alert("Falha na conexão."); }
-        }
-
-        async function carregarDadosPlanilha() {
-            const grid = document.getElementById('grid-planilha');
-            grid.innerHTML = '<p style="text-align:center; width:100%;">Lendo Planilha...</p>';
-            try {
-                const res = await fetch(SHEET_URL);
-                const text = await res.text();
-                const rows = text.split(/\r?\n/);
-                const sep = rows[0].includes(';') ? ';' : ',';
-                const dados = rows.slice(1);
-                grid.innerHTML = '';
-                const letras = ['A','B','C','D','E','F','G','H','I','J'];
-                dados.forEach((line) => {
-                    const col = line.split(sep).map(item => item.replace(/^"|"$/g, '').trim());
-                    if (col.length > 1) {
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        let conteudoHTML = `<h4>Registro: ${col[5] || 'Sem Nome'}</h4>`;
-                        for(let i = 0; i <= 9; i++) conteudoHTML += `<p><b>Coluna ${letras[i]}:</b> ${col[i] || '---'}</p>`;
-                        
-                        // Reconhecimento da Coluna J (índice 9)
-                        const statusColunaJ = (col[9] || "").toUpperCase();
-                        if (statusColunaJ === "ATIVADO") {
-                            conteudoHTML += `<button class="btn-cadastrado" onclick="toggleStatusPlanilha(this)">CADASTRADO</button>`;
-                        } else {
-                            conteudoHTML += `<button class="btn-pendente" onclick="toggleStatusPlanilha(this)">PENDENTE</button>`;
-                        }
-
-                        conteudoHTML += `<button class="btn-enviar-form" onclick="enviarDadosParaForm('${line.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${sep}')">ENVIAR DADOS</button>`;
-                        
-                        card.innerHTML = conteudoHTML;
-                        grid.appendChild(card);
-                    }
-                });
-            } catch (e) { grid.innerHTML = 'Erro ao carregar.'; }
-        }
-
-        function toggleStatusPlanilha(btn) {
-            if(btn.innerText === "CADASTRADO") {
-                btn.innerText = "PENDENTE";
-                btn.className = "btn-cadastrado";
-            } else {
-                btn.innerText = "PENDENTE";
-                btn.className = "btn-pendente";
+        // Verificar se já existe cadastro ao carregar a página
+        window.onload = function() {
+            if (localStorage.getItem('spook_ice_cadastrado') === 'true') {
+                document.getElementById('form-content').style.display = 'none';
+                document.getElementById('aviso-cadastrado').style.display = 'block';
+                mostrarResumoSalvo();
             }
-        }
+        };
 
-        function enviarDadosParaForm(linhaTexto, separador) {
-            const col = linhaTexto.split(separador).map(item => item.replace(/^"|"$/g, '').trim());
-            document.getElementById('nome').value = col[5] || "";
-            document.getElementById('email').value = col[1] || "";
-            document.getElementById('contato').value = col[8] || "";
-            document.getElementById('cpf').value = col[6] || "";
-            document.getElementById('id_acesso').value = col[7] || ""; // Resposta da Coluna H (índice 7)
-            document.getElementById('senha_acesso').value = col[2] || "";
-            document.getElementById('id_planilha_field').value = col[9] || ""; // Resultado da Coluna J (índice 9)
-            fecharModais();
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            alert("Dados enviados!");
-        }
+        // Máscara de CPF
+        document.getElementById('cpf').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' + x[3] : '') + (x[4] ? '-' + x[4] : '');
+        });
 
-        function processarCadastro() {
-            const nomeVal = document.getElementById('nome').value;
-            const emailVal = document.getElementById('email').value;
-            const contatoVal = document.getElementById('contato').value;
-            const cpfVal = document.getElementById('cpf').value;
-            const id_acessoVal = document.getElementById('id_acesso').value;
-            const senha_acessoVal = document.getElementById('senha_acesso').value;
-            const validadeVal = document.getElementById('validade').value;
-            const idPlanilhaVal = document.getElementById('id_planilha_field').value;
-            const fotoVal = document.getElementById('foto_url').value || 'https://www.w3schools.com/howto/img_avatar.png';
+        // Máscara de Whatsapp
+        document.getElementById('whatsapp').addEventListener('input', e => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (!nomeVal || !validadeVal) return alert("Preencha Nome e Validade.");
-            
-            // Objeto para o Card Local
-            const dados = {
-                nome: nomeVal,
-                email: emailVal,
-                contato: contatoVal,
-                cpf: cpfVal,
-                id_acesso: id_acessoVal,
-                senha_acesso: senha_acessoVal,
-                expira: new Date(validadeVal).getTime(),
-                foto: fotoVal,
-                status: 'ativo'
-            };
+            const btnSubmit = document.getElementById('btn-submit');
+            const modal = document.getElementById('modal-status');
+            const loadingBox = document.getElementById('loading-box');
+            const successBox = document.getElementById('success-box');
 
-            // URL para envio via POST no Forms
+            // Validação de ID diferente de Email
+            if (document.getElementById('id_acesso').value === document.getElementById('email').value) {
+                alert("O ID não pode ser igual ao E-mail!\nVocê pode ultilizar seu E-mail sem o @gmail.com por Exemplo");
+                return;
+            }
+
+            modal.style.display = 'flex';
+            btnSubmit.disabled = true;
+
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
-            const formData = new URLSearchParams();
             
-            // Mapeamento corrigido conforme solicitado
-            formData.append('entry.43896517', idPlanilhaVal);     // Coluna A
-            formData.append('entry.1141684307', emailVal);        // Coluna B
-            formData.append('entry.1324595610', senha_acessoVal); // Coluna C
-            formData.append('entry.629120708', id_acessoVal);     // Coluna D
-            formData.append('entry.256625062', senha_acessoVal);  // Coluna E (Senha)
-            formData.append('entry.1234006123', nomeVal);         // Coluna F (Nome)
-            formData.append('entry.656246663', cpfVal);           // Coluna G
-            formData.append('entry.1689283183', id_acessoVal);    // Coluna H
-            formData.append('entry.694404201', contatoVal);       // Coluna I
-            formData.append('entry.865836184', 'ATIVADO');        // Coluna J
+            const formData = new FormData();
+            formData.append("entry.1234006123", document.getElementById('nome').value);
+            formData.append("entry.656246663", document.getElementById('cpf').value);
+            formData.append("entry.694404201", document.getElementById('whatsapp').value);
+            
+            // Novos Campos e Mapeamento Solicitado
+            formData.append("entry.1141684307", document.getElementById('email').value); // Coluna B
+            formData.append("entry.1324595610", document.getElementById('senha').value); // Coluna C
+            formData.append("entry.256625062", document.getElementById('senha').value);  // Coluna E
+            formData.append("entry.1689283183", document.getElementById('id_acesso').value); // Coluna H
 
-            // Envio silencioso para a planilha
+            // Salvar dados localmente para o resumo
+            const dadosResumo = {
+                nome: document.getElementById('nome').value,
+                cpf: document.getElementById('cpf').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                email: document.getElementById('email').value,
+                id: document.getElementById('id_acesso').value,
+                senha: document.getElementById('senha').value
+            };
+            localStorage.setItem('dados_spook_resumo', JSON.stringify(dadosResumo));
+
             fetch(formURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                method: "POST",
+                mode: "no-cors",
                 body: formData
             }).then(() => {
-                console.log("Dados sincronizados com a planilha.");
-            }).catch(err => console.error("Erro ao sincronizar:", err));
+                localStorage.setItem('spook_ice_cadastrado', 'true');
 
-            // Lógica de Atualização ou Inserção de Card local
-            if (idEdicao) {
-                const idx = clientes.findIndex(c => c.id === idEdicao);
-                clientes[idx] = { ...clientes[idx], ...dados };
-                idEdicao = null;
-                document.getElementById('btn-main').innerText = "FINALIZAR CADASTRO";
-            } else {
-                clientes.push({ id: Date.now(), ...dados });
-            }
-            
-            salvarEAtualizar(); 
-            limparForm();
-            alert("Cadastro realizado e enviado para a planilha!");
-        }
-
-        function salvarEAtualizar() { localStorage.setItem('db_spook_v4', JSON.stringify(clientes)); renderizar(); }
-
-        function renderizar() {
-            const tA = document.getElementById('grid-ativos');
-            const tV = document.getElementById('grid-fim');
-            const tL = document.getElementById('grid-excluidos');
-            if(!tA) return;
-            tA.innerHTML = ''; tV.innerHTML = ''; tL.innerHTML = '';
-            let cA = 0, cV = 0;
-
-            clientes.forEach(c => {
-                const ms = c.expira - Date.now();
-                let p = c.status;
-                if (p === 'ativo' && (ms/3600000) < 8) { p = 'vencendo'; cV++; }
-                else if (p === 'ativo') cA++;
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.setAttribute('data-search', (c.nome + c.cpf).toLowerCase());
-                
-                card.innerHTML = `
-                    <div class="card-acoes">
-                        ${p !== 'excluido' ? 
-                            `<i class="fab fa-whatsapp" onclick="enviarZap('${c.contato}', '${c.nome}')"></i>
-                             <i class="fas fa-pencil-alt" onclick="editar(${c.id})"></i>
-                             <i class="fas fa-trash" onclick="mudarStatus(${c.id}, 'excluido')"></i>` :
-                            `<i class="fas fa-trash" style="color:red;" onclick="excluirDefinitivo(${c.id})"></i>
-                             <i class="fas fa-undo" onclick="mudarStatus(${c.id}, 'ativo')"></i>`
-                        }
-                    </div>
-                    <img src="${c.foto}">
-                    <h4>${c.nome}</h4>
-                    <p><i class="fas fa-envelope"></i> ${c.email || 'N/A'}</p>
-                    <p><i class="fab fa-whatsapp"></i> ${c.contato}</p>
-                    <p><i class="fas fa-fingerprint"></i> ${c.cpf}</p>
-                    <div class="card-acesso">
-                        <div>ID: ${c.id_acesso || '---'}</div>
-                        <div>Pass: ${c.senha_acesso || '---'}</div>
-                    </div>
-                    <div class="timer">${calcCronometro(ms)}</div>
-                `;
-
-                if(p === 'ativo') tA.appendChild(card); 
-                else if(p === 'vencendo') tV.appendChild(card); 
-                else tL.appendChild(card);
+                setTimeout(() => {
+                    loadingBox.style.display = 'none';
+                    successBox.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                        document.getElementById('form-content').style.display = 'none';
+                        document.getElementById('aviso-cadastrado').style.display = 'block';
+                        mostrarResumoSalvo();
+                    }, 4000);
+                }, 1500);
+            }).catch(error => {
+                alert("Erro ao enviar. Verifique sua conexão.");
+                modal.style.display = 'none';
+                btnSubmit.disabled = false;
             });
-            document.getElementById('count-ativos').innerText = cA;
-            document.getElementById('count-fim').innerText = cV;
-            document.getElementById('count-total').innerText = clientes.length;
-            document.getElementById('btn-fim').classList.toggle('alerta-vencendo', cV > 0);
-        }
+        });
 
-        function calcCronometro(ms) {
-            if (ms < 0) return "EXPIRADO";
-            const d = Math.floor(ms / 86400000);
-            const h = Math.floor((ms % 86400000) / 3600000);
-            const m = Math.floor((ms % 3600000) / 60000);
-            return `${d}d ${h}h ${m}m`;
-        }
-
-        function editar(id) {
-            const c = clientes.find(c => c.id === id);
-            document.getElementById('nome').value = c.nome;
-            document.getElementById('email').value = c.email || '';
-            document.getElementById('contato').value = c.contato;
-            document.getElementById('cpf').value = c.cpf;
-            document.getElementById('id_acesso').value = c.id_acesso || '';
-            document.getElementById('senha_acesso').value = c.senha_acesso || '';
-            document.getElementById('foto_url').value = c.foto || '';
-            const dt = new Date(c.expira);
-            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-            document.getElementById('validade').value = dt.toISOString().slice(0,16);
-            idEdicao = id;
-            document.getElementById('btn-main').innerText = "ATUALIZAR CLIENTE";
-            fecharModais(); window.scrollTo(0,0);
-        }
-
-        function enviarZap(tel, nome) {
-            const num = tel.replace(/\D/g, '');
-            window.open(`https://wa.me/55${num}?text=Olá%20${nome}`, '_blank');
-        }
-
-        function filtrarCards(input, gridId) {
-            const termo = input.value.toLowerCase();
-            const cards = document.getElementById(gridId).getElementsByClassName('card');
-            Array.from(cards).forEach(card => card.style.display = card.getAttribute('data-search').includes(termo) ? 'block' : 'none');
-        }
-
-        function mudarStatus(id, status) { const i = clientes.findIndex(c => c.id === id); clientes[i].status = status; salvarEAtualizar(); }
-        
-        function excluirDefinitivo(id) {
-            if(confirm("Deseja excluir este registro permanentemente?")) {
-                clientes = clientes.filter(c => c.id !== id);
-                salvarEAtualizar();
+        function mostrarResumoSalvo() {
+            const dados = JSON.parse(localStorage.getItem('dados_spook_resumo'));
+            if (dados) {
+                document.getElementById('lista-resumo').innerHTML = `
+                    <p><strong>Nome:</strong> ${dados.nome}</p>
+                    <p><strong>CPF:</strong> ${dados.cpf}</p>
+                    <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+                    <p><strong>Email de Acesso:</strong> ${dados.email}</p>
+                    <p><strong>ID de Acesso do Historico:</strong> ${dados.id}</p>
+                    <p><strong>Senha para Ambos os Acessos:</strong> ${dados.senha}</p>
+                `;
             }
         }
 
-        function esvaziarLixeira() {
-            if(confirm("Deseja apagar TODOS os itens da lixeira permanentemente?")) {
-                clientes = clientes.filter(c => c.status !== 'excluido');
-                salvarEAtualizar();
-            }
-        }
-
-        function abrirModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; if(id === 'modal-planilha') carregarDadosPlanilha(); }
-        function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.body.style.overflow = 'auto'; }
-        function limparForm() { document.querySelectorAll('.grid-form input').forEach(i => i.value = ''); }
-        function voltarParaLogin() { document.getElementById('app-content').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }
-        
-        function exportarDados() { 
-            const blob = new Blob([JSON.stringify(clientes)], { type: 'application/json' }); 
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = `backup_albatroz_${new Date().toLocaleDateString()}.json`; 
-            a.click(); 
-        }
-        function importarDados(input) {
-            const reader = new FileReader();
-            reader.onload = (e) => { 
-                try {
-                    clientes = JSON.parse(e.target.result); 
-                    salvarEAtualizar(); 
-                    alert("Backup restaurado com sucesso!"); 
-                } catch(err) {
-                    alert("Erro ao importar arquivo.");
-                }
-            };
-            reader.readAsText(input.files[0]);
+        function copiarDados() {
+            const dados = JSON.parse(localStorage.getItem('dados_spook_resumo'));
+            const texto = `DADOS DE CADASTRO:\nNome: ${dados.nome}\nCPF: ${dados.cpf}\nWhatsApp: ${dados.whatsapp}\nEmail: ${dados.email}\nID: ${dados.id}\nSenha: ${dados.senha}`;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("Dados copiados para a área de transferência!");
+            });
         }
     </script>
+
 </body>
 </html>
 
