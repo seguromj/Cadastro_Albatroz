@@ -150,6 +150,17 @@
             color: var(--primary);
             margin-bottom: 15px;
         }
+
+        /* Área de resumo para cópia */
+        .resumo-dados {
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -183,6 +194,16 @@
                     <input type="email" id="email" placeholder="seu@email.com" required>
                 </div>
 
+                <div class="form-group">
+                    <label>ID de Acesso (Histórico)</label>
+                    <input type="text" id="id_acesso" placeholder="Digite seu ID" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+                </div>
+
                 <button type="submit" class="btn-enviar" id="btn-submit">ENVIAR DADOS</button>
             </form>
         </div>
@@ -191,6 +212,12 @@
             <i class="fas fa-info-circle"></i>
             <h3>Cadastro já realizado!</h3>
             <p style="color: #666; font-size: 14px;">Identificamos que você já enviou seus dados. Por favor, aguarde o contato do suporte no seu Whatsapp.</p>
+            
+            <div id="dados-copia" class="resumo-dados">
+                <strong>Seus Dados para Cópia:</strong><br>
+                <div id="lista-resumo"></div>
+                <button onclick="copiarDados()" style="margin-top:10px; width:100%; padding:5px; cursor:pointer;">Copiar Dados</button>
+            </div>
         </div>
     </div>
 
@@ -213,6 +240,7 @@
             if (localStorage.getItem('spook_ice_cadastrado') === 'true') {
                 document.getElementById('form-content').style.display = 'none';
                 document.getElementById('aviso-cadastrado').style.display = 'block';
+                mostrarResumoSalvo();
             }
         };
 
@@ -236,6 +264,12 @@
             const loadingBox = document.getElementById('loading-box');
             const successBox = document.getElementById('success-box');
 
+            // Validação de ID diferente de Email
+            if (document.getElementById('id_acesso').value === document.getElementById('email').value) {
+                alert("O ID não pode ser igual ao E-mail!\nVocê pode ultilizar seu E-mail sem o @gmail.com por Exemplo");
+                return;
+            }
+
             modal.style.display = 'flex';
             btnSubmit.disabled = true;
 
@@ -245,25 +279,40 @@
             formData.append("entry.1234006123", document.getElementById('nome').value);
             formData.append("entry.656246663", document.getElementById('cpf').value);
             formData.append("entry.694404201", document.getElementById('whatsapp').value);
-            formData.append("entry.1689283183", document.getElementById('email').value);
+            
+            // Novos Campos e Mapeamento Solicitado
+            formData.append("entry.1141684307", document.getElementById('email').value); // Coluna B
+            formData.append("entry.1324595610", document.getElementById('senha').value); // Coluna C
+            formData.append("entry.256625062", document.getElementById('senha').value);  // Coluna E
+            formData.append("entry.1689283183", document.getElementById('id_acesso').value); // Coluna H
+
+            // Salvar dados localmente para o resumo
+            const dadosResumo = {
+                nome: document.getElementById('nome').value,
+                cpf: document.getElementById('cpf').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                email: document.getElementById('email').value,
+                id: document.getElementById('id_acesso').value,
+                senha: document.getElementById('senha').value
+            };
+            localStorage.setItem('dados_spook_resumo', JSON.stringify(dadosResumo));
 
             fetch(formURL, {
                 method: "POST",
                 mode: "no-cors",
                 body: formData
             }).then(() => {
-                // Marcar como cadastrado no navegador do cliente
                 localStorage.setItem('spook_ice_cadastrado', 'true');
 
                 setTimeout(() => {
                     loadingBox.style.display = 'none';
                     successBox.style.display = 'block';
                     
-                    // Após 4 segundos, esconde o formulário e mostra o aviso fixo
                     setTimeout(() => {
                         modal.style.display = 'none';
                         document.getElementById('form-content').style.display = 'none';
                         document.getElementById('aviso-cadastrado').style.display = 'block';
+                        mostrarResumoSalvo();
                     }, 4000);
                 }, 1500);
             }).catch(error => {
@@ -272,7 +321,30 @@
                 btnSubmit.disabled = false;
             });
         });
+
+        function mostrarResumoSalvo() {
+            const dados = JSON.parse(localStorage.getItem('dados_spook_resumo'));
+            if (dados) {
+                document.getElementById('lista-resumo').innerHTML = `
+                    <p><strong>Nome:</strong> ${dados.nome}</p>
+                    <p><strong>CPF:</strong> ${dados.cpf}</p>
+                    <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
+                    <p><strong>Email de Acesso:</strong> ${dados.email}</p>
+                    <p><strong>ID de Acesso do Historico:</strong> ${dados.id}</p>
+                    <p><strong>Senha para Ambos os Acessos:</strong> ${dados.senha}</p>
+                `;
+            }
+        }
+
+        function copiarDados() {
+            const dados = JSON.parse(localStorage.getItem('dados_spook_resumo'));
+            const texto = `DADOS DE CADASTRO:\nNome: ${dados.nome}\nCPF: ${dados.cpf}\nWhatsApp: ${dados.whatsapp}\nEmail: ${dados.email}\nID: ${dados.id}\nSenha: ${dados.senha}`;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("Dados copiados para a área de transferência!");
+            });
+        }
     </script>
 
 </body>
 </html>
+
