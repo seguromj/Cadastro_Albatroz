@@ -268,7 +268,7 @@
 
             // Validação de ID diferente de Email
             if (document.getElementById('id_acesso').value === document.getElementById('email').value) {
-                alert("O ID não pode ser igual ao E-mail!\nVocê pode ultilizar seu E-mail sem o: @ por Exemplo");
+                alert("O ID não pode ser igual ao E-mail!\nVocê pode usar o prefixo do seu e-mail (a parte antes do @) por exemplo");
                 return;
             }
 
@@ -366,8 +366,8 @@
                     <p><strong>Nome:</strong> ${dados.nome}</p>
                     <p><strong>CPF:</strong> ${dados.cpf}</p>
                     <p><strong>WhatsApp:</strong> ${dados.whatsapp}</p>
-                    <p><strong>Email de Acesso:</strong> ${dados.email}</p>
-                    <p><strong>ID de Acesso do Historico:</strong> ${dados.id}</p>
+                    <p><strong>Email de Acesso para entar no sistema:</strong> ${dados.email}</p>
+                    <p><strong>ID de Acesso do Historico de Venda:</strong> ${dados.id}</p>
                     <p><strong>Senha para Ambos os Acessos:</strong> ${dados.senha}</p>
                     <p><strong>ID de Controle:</strong> ${dados.id_unico || ''}</p>
                 `;
