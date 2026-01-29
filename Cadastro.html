@@ -196,8 +196,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Digite o prefixo do seu E-mail (a parte antes do @)</label>
-                    <p style="color: blue; font-size: 10px;">Para acessar o seu<strong style="color: red;"> Historico de Venda</strong>, use o prefixo do seu e-mail (a parte antes do @) como ID.</p>
+                    <label>Digite seu E-mail sem o:  @</label>
+                    <p style="color: blue; font-size: 10px;">Para acessar o seu<strong style="color: red;"> Historico de Venda</strong>, use o seu e-mail (Sem o @) como ID.</p>
                     <input type="text" id="id_acesso" placeholder="Digite seu E-mail Sem o: @" required>
                 </div>
 
@@ -268,7 +268,7 @@
 
             // Validação de ID diferente de Email
             if (document.getElementById('id_acesso').value === document.getElementById('email').value) {
-                alert("O ID não pode ser igual ao E-mail!\nVocê pode usar o prefixo do seu e-mail (a parte antes do @) por exemplo");
+                alert("O ID não pode ser igual ao E-mail!\nVocê pode usar o seu e-mail (Sem o @) por exemplo");
                 return;
             }
 
