@@ -214,12 +214,14 @@
             <i class="fas fa-info-circle"></i>
             <h3>Cadastro já realizado!</h3>
             <p style="color: #666; font-size: 14px;">Identificamos que você já enviou seus dados. Por favor, aguarde o contato do suporte no seu Whatsapp.</p>
+            <p style="color: red; font-size: 14px;">O acesso ao sistema foi liberado. por favor, utilize as credenciais abaixo para entrar.</p>
             
             <div id="dados-copia" class="resumo-dados">
                 <strong>Seus Dados para Cópia:</strong><br>
                 <div id="lista-resumo"></div>
                 <button onclick="copiarDados()" style="margin-top:10px; width:100%; padding:5px; cursor:pointer;">Copiar Dados</button>
             </div>
+            <p style="color: red; font-size: 14px;">O acesso ao sistema foi liberado. por favor, utilize as credenciais abaixo para entrar.</p>
         </div>
     </div>
 
@@ -369,7 +371,7 @@
                     <p><strong>Email de Acesso para entar no sistema:</strong> ${dados.email}</p>
                     <p><strong>ID de Acesso do Historico de Venda:</strong> ${dados.id}</p>
                     <p><strong>Senha para Ambos os Acessos:</strong> ${dados.senha}</p>
-                    <p><strong>ID de Controle:</strong> ${dados.id_unico || ''}</p>
+                    <p><strong>Protocolo:</strong> ${dados.id_unico || ''}</p>
                 `;
             }
         }
