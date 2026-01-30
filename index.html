@@ -484,36 +484,6 @@
             reader.readAsText(input.files[0]);
         }
 
-
-       let deferredPrompt;
-const containerInstalacao = document.getElementById('container-instalacao');
-const btnInstalarApp = document.getElementById('btnInstalarApp');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede o Chrome de mostrar o banner automático
-    e.preventDefault();
-    // Guarda o evento para ser usado depois
-    deferredPrompt = e;
-    // Mostra o seu modal personalizado de instalação
-    containerInstalacao.style.display = 'block';
-});
-
-btnInstalarApp.addEventListener('click', async () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            console.log('Usuário aceitou a instalação');
-        }
-        deferredPrompt = null;
-        containerInstalacao.style.display = 'none';
-    }
-});
-
-document.getElementById('btnRecusarApp').addEventListener('click', () => {
-    containerInstalacao.style.display = 'none';
-});
- 
     </script>
 </body>
 </html>
